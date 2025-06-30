@@ -1,0 +1,23 @@
+# Ignore build output
+bin/
+obj/
+
+# Ignore user-specific files
+*.user
+*.suo
+
+# Ignore Visual Studio temporary folders
+.vs/
+
+# VS index files that cause permission errors
+*.vsidx
+
+# Ignore Rider IDE folders (if applicable)
+.idea/
+
+# Ignore NuGet packages folder
+packages/
+
+# Others
+*.log
+*.DS_Store
