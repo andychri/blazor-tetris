@@ -1,0 +1,31 @@
+﻿body {
+}
+
+.tetris-grid {
+    vertical-align: central;
+}
+
+.tetris-cell {
+    width: 40px;
+    height: 40px;
+    outline: 2px solid #000000;
+    display: inline-block;
+}
+
+.tetris-row {
+    display: flex;
+}
+
+.board {
+    justify-content:center;
+}
+ 
+.tetris-board {
+    display: inline-block;
+    margin: auto 0;
+}
+
+.tetris {
+    text-align: center;
+}
+

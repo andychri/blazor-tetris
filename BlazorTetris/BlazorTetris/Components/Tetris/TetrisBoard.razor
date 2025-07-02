@@ -1,0 +1,19 @@
+﻿@using BlazorTetris.Tetris
+
+<p>Test: TetrisBoard is rendering</p>
+<div class="tetris-board">
+@for (int row=0; row<20; row++)
+{
+	<div class="tetris-row">
+		@for (int col=0; col<10; col++)
+		{
+			var cell = gameGrid[row, col];
+			<div class="tetris-cell" style="background-color:@cell.Color"></div>
+		}
+	</div> 
+}
+</div>
+
+@code {
+	public Grid gameGrid = new Grid();
+}
