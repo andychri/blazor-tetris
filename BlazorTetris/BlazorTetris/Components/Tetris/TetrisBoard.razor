@@ -1,19 +1,90 @@
 ﻿@using BlazorTetris.Tetris
+@inject IJSRuntime JS
+@implements IDisposable
+@using System;
+@using System.Timers;
 
-<p>Test: TetrisBoard is rendering</p>
-<div class="tetris-board">
-@for (int row=0; row<20; row++)
-{
-	<div class="tetris-row">
-		@for (int col=0; col<10; col++)
-		{
-			var cell = gameGrid[row, col];
-			<div class="tetris-cell" style="background-color:@cell.Color"></div>
-		}
-	</div> 
-}
+
+<div class="tetris-game">
+    <div class="tetris-board-wrapper" @ref="boardDiv" tabindex="0" @onkeydown="HandleKeyDown">
+        @for (int row = 0; row < 20; row++)
+        {
+            <div class="tetris-row">
+                @for (int col = 0; col < 10; col++)
+                {
+                    var cell = gameBoard.GetCell(row, col);
+                    <div class="tetris-cell" style="background-color:@cell.Color"></div>
+                }
+            </div>
+        }
+    </div>
 </div>
 
 @code {
-	public Grid gameGrid = new Grid();
+    private ElementReference boardDiv;
+    private Board gameBoard;
+    private Movement movement;
+    private Timer dropTimer;
+
+    public TetrisBoard()
+    {
+        this.gameBoard = new Board();
+        this.movement = new Movement(gameBoard);
+    }
+
+    protected override void OnInitialized() {
+        StartDropTimer();
+    }
+
+    private void StartDropTimer() {
+        dropTimer = new Timer(500);
+        dropTimer.Elapsed += OnDrop;
+        dropTimer.AutoReset = true;
+        dropTimer.Start();
+    }
+
+    private void OnDrop(object? sender, ElapsedEventArgs e) {
+        if (!gameBoard.CanPlacePiece(gameBoard.currentPiece, "down")){
+            gameBoard.PlacePiece();
+        }
+        movement.MoveDown();
+        InvokeAsync(StateHasChanged); // Trigger re-render on UI thread
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender)
+        {
+            await boardDiv.FocusAsync(); // ✅ sets focus to receive key input
+        }
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e) {
+        switch (e.Key)
+        {
+            case "ArrowLeft":
+                movement.MoveLeft();
+                break;
+            case "ArrowRight":
+                movement.MoveRight();
+                break;
+            case "ArrowDown":
+                movement.MoveDown();
+                break;
+            case "ArrowUp":
+                movement.Rotate("clockwise"); ;
+                break;
+            case "z":
+                movement.Rotate("counter clockwise");
+                break;
+            case " ":
+                gameBoard.PlacePiece();
+                break;
+        }
+
+        StateHasChanged();
+    }
+
+    public void Dispose() {
+        // If you need JS cleanup later, do it here
+    }
 }

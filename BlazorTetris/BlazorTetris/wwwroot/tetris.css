@@ -1,11 +1,4 @@
-﻿body {
-}
-
-.tetris-grid {
-    vertical-align: central;
-}
-
-.tetris-cell {
+﻿.tetris-cell {
     width: 40px;
     height: 40px;
     outline: 2px solid #000000;
@@ -27,5 +20,13 @@
 
 .tetris {
     text-align: center;
+}
+
+.score {
+    background-color: green;
+}
+
+.score > h1 {
+    color: red;
 }
 

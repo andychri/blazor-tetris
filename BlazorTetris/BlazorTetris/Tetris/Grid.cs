@@ -3,8 +3,9 @@
 
         private readonly int rows = 20;
         private readonly int columns = 10;
-        public Cell[,] cellGrid = new Cell[20, 10];
+        public Cell[,] cellGrid;
         public Grid() {
+            cellGrid = new Cell[rows, columns];
             InitializeGrid();
         }
         private void InitializeGrid() {
@@ -12,7 +13,7 @@
             {
                 for (int col = 0; col < columns; col++)
                 {
-                    cellGrid[row, col] = new Cell();
+                    cellGrid[row, col] = new Cell{IsFilled=false, Color="#d1cbc7" };
                 }
             }
         }
