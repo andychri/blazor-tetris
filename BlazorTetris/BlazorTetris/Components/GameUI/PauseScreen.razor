@@ -1,0 +1,19 @@
+﻿@using BlazorTetris.Tetris
+
+
+@if (isPaused)
+{
+    <h3>PauseScreen</h3>
+    <h1>Press 'p' to resume gameplay</h1>
+}
+
+@code {
+    [Parameter]
+    public required Board gameBoard { get; set; }
+
+    [Parameter]
+    public bool isPaused { get; set; }
+
+
+
+}

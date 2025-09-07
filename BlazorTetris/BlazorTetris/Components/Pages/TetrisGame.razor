@@ -1,11 +1,15 @@
 ﻿@page "/tetris"
 @rendermode InteractiveServer
 @using BlazorTetris.Components.Tetris
+@using BlazorTetris.Components.GameUI
+@using BlazorTetris.Tetris
 
+<PageTitle>Tetris Game</PageTitle>
 <div class="tetris">
-	<PageTitle>Tetris Game</PageTitle>
-	<div class="board">
-		<TetrisBoard />
+	<div class="frame">
+		<div class="board">
+			<MainMenu/>
+		</div>
 	</div>
 </div>
 

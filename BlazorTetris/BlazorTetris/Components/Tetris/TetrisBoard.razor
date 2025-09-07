@@ -12,7 +12,7 @@
             <div class="tetris-row">
                 @for (int col = 0; col < 10; col++)
                 {
-                    var cell = gameBoard.GetCell(row, col);
+                    var cell = GameBoard.GetCell(row, col);
                     <div class="tetris-cell" style="background-color:@cell.Color"></div>
                 }
             </div>
@@ -21,15 +21,15 @@
 </div>
 
 @code {
+    [Parameter] public Board GameBoard { get; set; } = default!;
+
     private ElementReference boardDiv;
-    private Board gameBoard;
     private Movement movement;
     private Timer dropTimer;
 
-    public TetrisBoard()
+    protected override void OnParametersSet()
     {
-        this.gameBoard = new Board();
-        this.movement = new Movement(gameBoard);
+        movement = new Movement(GameBoard);
     }
 
     protected override void OnInitialized() {
@@ -44,8 +44,8 @@
     }
 
     private void OnDrop(object? sender, ElapsedEventArgs e) {
-        if (!gameBoard.CanPlacePiece(gameBoard.currentPiece, "down")){
-            gameBoard.PlacePiece();
+        if (!GameBoard.CanPlacePiece(GameBoard.currentPiece, "down")){
+            GameBoard.PlacePiece();
         }
         movement.MoveDown();
         InvokeAsync(StateHasChanged); // Trigger re-render on UI thread
@@ -77,7 +77,7 @@
                 movement.Rotate("counter clockwise");
                 break;
             case " ":
-                gameBoard.PlacePiece();
+                GameBoard.PlacePiece();
                 break;
         }
 

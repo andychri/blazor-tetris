@@ -11,7 +11,8 @@ namespace BlazorTetris.Tetris {
         }
 
         public void SpawnPiece() {
-            currentPiece = TetrominoFactory.CreateRandomPiece();
+            if (!gameGrid.cellGrid[0, 5].IsFilled)
+                currentPiece = TetrominoFactory.CreateRandomPiece();
         }
 
         public Cell GetCell(int row, int col) {
@@ -122,8 +123,6 @@ namespace BlazorTetris.Tetris {
                 }
                 if (countFilled == 10) {
 
-                    lineAmount += 1;
-
                     for (int col2 = 0; col2 < 10; col2++) {
                         gameGrid.cellGrid[row, col2] = new Cell { IsFilled = false, Color = "#d1cbc7" };
                     }
@@ -137,7 +136,7 @@ namespace BlazorTetris.Tetris {
                         gameGrid.cellGrid[0, col] = new Cell { IsFilled = false, Color = "#d1cbc7" };
                     }
                 }
+            }
         }
-
     }
 }

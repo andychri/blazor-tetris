@@ -1,0 +1,25 @@
+﻿@using BlazorTetris.Tetris
+
+
+<div class="menu">
+    @if (screen == Screen.Menu) {
+    <h1>Tetris</h1>
+    <button @onclick="StartGame">Play</button>
+    }
+    else if (screen == Screen.Game)
+    {
+    <TetrisBoard GameBoard="gameBoard"/>
+    }
+</div>
+
+@code {
+    private Board gameBoard = new Board();
+    private Screen screen = Screen.Menu;
+
+    void StartGame() {
+        gameBoard = new();
+        screen = Screen.Game;
+    }
+
+    enum Screen { Menu, Game, Pause, GameOver, Scoreboard }
+}
