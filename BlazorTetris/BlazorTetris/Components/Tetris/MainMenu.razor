@@ -1,25 +1,54 @@
 ﻿@using BlazorTetris.Tetris
-
+@using System.Timers
+@implements IDisposable
 
 <div class="menu">
-    @if (screen == Screen.Menu) {
+    @if (screen == Screen.Menu)
+    {
     <h1>Tetris</h1>
     <button @onclick="StartGame">Play</button>
     }
     else if (screen == Screen.Game)
     {
-    <TetrisBoard GameBoard="gameBoard"/>
+    <TetrisBoard GameBoard="gameBoard" />
+    }
+    else if (screen == Screen.GameOver)
+    {
+    <GameOverScreen OnRetry="StartGame" OnMenu="GoToMenu" />
     }
 </div>
 
 @code {
-    private Board gameBoard = new Board();
+    private Board gameBoard = new();
     private Screen screen = Screen.Menu;
 
-    void StartGame() {
-        gameBoard = new();
+    // tiny watcher that flips to GameOver when the board flag turns true
+    private Timer? overWatch;
+
+    protected override void OnInitialized()
+    {
+        overWatch = new Timer(50);
+        overWatch.Elapsed += (_, __) =>
+        {
+            if (screen == Screen.Game && gameBoard.GameOver)
+            {
+                screen = Screen.GameOver;
+                InvokeAsync(StateHasChanged); // re-render UI thread
+            }
+        };
+        overWatch.AutoReset = true;
+        overWatch.Start();
+    }
+
+    void StartGame()
+    {
+        gameBoard = new();     // GameOver resets to false
         screen = Screen.Game;
     }
+
+    void GoToMenu() => screen = Screen.Menu;
+
+    public void Dispose() => overWatch?.Dispose();
 
     enum Screen { Menu, Game, Pause, GameOver, Scoreboard }
 }

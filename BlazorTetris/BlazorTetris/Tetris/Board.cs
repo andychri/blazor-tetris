@@ -5,6 +5,7 @@ namespace BlazorTetris.Tetris {
 
         public Grid gameGrid = new Grid();
         public Tetromino currentPiece = null!;
+        public bool GameOver; // defaults to false
         public int score = 0;
         public Board() {
             SpawnPiece();
@@ -13,6 +14,13 @@ namespace BlazorTetris.Tetris {
         public void SpawnPiece() {
             if (!gameGrid.cellGrid[0, 5].IsFilled)
                 currentPiece = TetrominoFactory.CreateRandomPiece();
+        }
+
+        private bool TopRowOccupied()
+        {
+            for (int c = 0; c < 10; c++)
+                if (gameGrid.cellGrid[0, c].IsFilled) return true;
+            return false;
         }
 
         public Cell GetCell(int row, int col) {
@@ -106,6 +114,11 @@ namespace BlazorTetris.Tetris {
                 }
             }
             RemoveRow();
+            if (TopRowOccupied())
+            {
+                GameOver = true;
+                return;                                      // stop here: no new spawn
+            }
             SpawnPiece();
         }
 

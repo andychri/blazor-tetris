@@ -1,0 +1,14 @@
+﻿<div class="gameover">
+    <h1>Game Over</h1>
+
+    <div class="actions">
+        <button @onclick="OnRetry">Play again</button>
+        <button @onclick="OnMenu">Main menu</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Score { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
+    [Parameter] public EventCallback OnMenu { get; set; }
+}
