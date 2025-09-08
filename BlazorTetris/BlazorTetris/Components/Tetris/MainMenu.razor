@@ -3,20 +3,24 @@
 @implements IDisposable
 
 <div class="menu">
-    @if (screen == Screen.Menu)
-    {
-    <h1>Tetris</h1>
-    <button @onclick="StartGame">Play</button>
+    @if (screen == Screen.Menu) {
+      <h1>Tetris</h1>
+      <button @onclick="StartGame">Play</button>
+      <button @onclick="ShowScores">Scoreboard</button>  @* new *@
+        }
+    else if (screen == Screen.Game) {
+      <TetrisBoard GameBoard="gameBoard" />
     }
-    else if (screen == Screen.Game)
-    {
-    <TetrisBoard GameBoard="gameBoard" />
+    else if (screen == Screen.GameOver) {
+      <GameOverScreen GameBoard="gameBoard"
+                OnPlayAgain="StartGame"
+                OnMenu="ShowMenu"
+                OnViewScores="ShowScores" />
     }
-    else if (screen == Screen.GameOver)
-    {
-    <GameOverScreen OnRetry="StartGame" OnMenu="GoToMenu" />
+    else if (screen == Screen.Scoreboard) {
+      <ScoreBoard OnBack="ShowMenu" />
     }
-</div>
+    </div>
 
 @code {
     private Board gameBoard = new();
@@ -51,4 +55,7 @@
     public void Dispose() => overWatch?.Dispose();
 
     enum Screen { Menu, Game, Pause, GameOver, Scoreboard }
+
+    void ShowMenu() => screen = Screen.Menu;
+    void ShowScores() => screen = Screen.Scoreboard;
 }

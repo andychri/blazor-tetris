@@ -7,6 +7,7 @@ namespace BlazorTetris.Tetris {
         public Tetromino currentPiece = null!;
         public bool GameOver; // defaults to false
         public int score = 0;
+
         public Board() {
             SpawnPiece();
         }
@@ -122,34 +123,71 @@ namespace BlazorTetris.Tetris {
             SpawnPiece();
         }
 
-        public void RemoveRow() {
+        private void ScoreLines(int lines)
+        {
+            if (lines <= 0) return;
 
-            for (int row = 0; row < 20; row++) {
+            int gained;
+            switch (lines)
+            {
+                case 1: gained = 100; break;
+                case 2: gained = 300; break;
+                case 3: gained = 500; break;
+                case 4: gained = 800; break;
+                default: gained = 1000 + (lines - 4) * 400; break; // just in case
+            }
+            score += gained;
+        }
+
+        public void RemoveRow()
+        {
+
+            int linesCleared = 0;
+
+            for (int row = 0; row < 20; row++)
+            {
 
                 int countFilled = 0;
 
-                for (int col = 0; col <10; col++) {
-
-                    if (gameGrid.cellGrid[row, col].IsFilled) {
+                for (int col = 0; col < 10; col++)
+                {
+                    if (gameGrid.cellGrid[row, col].IsFilled)
+                    {
                         countFilled++;
                     }
                 }
-                if (countFilled == 10) {
 
-                    for (int col2 = 0; col2 < 10; col2++) {
+                if (countFilled == 10)
+                {
+                    // clear this row
+                    for (int col2 = 0; col2 < 10; col2++)
+                    {
                         gameGrid.cellGrid[row, col2] = new Cell { IsFilled = false, Color = "#d1cbc7" };
                     }
 
-                    for (int r = row; r > 0; r--) {
-                        for (int col2 = 0; col2 < 10; col2++) {
-                            gameGrid.cellGrid[r, col2] = gameGrid.cellGrid[r - 1, col2]; // ✅ use r, not row
+                    // shift everything above down one row
+                    for (int r = row; r > 0; r--)
+                    {
+                        for (int col2 = 0; col2 < 10; col2++)
+                        {
+                            gameGrid.cellGrid[r, col2] = gameGrid.cellGrid[r - 1, col2];
                         }
                     }
-                    for (int col = 0; col < 10; col++) {
+                    // clear the new top row
+                    for (int col = 0; col < 10; col++)
+                    {
                         gameGrid.cellGrid[0, col] = new Cell { IsFilled = false, Color = "#d1cbc7" };
                     }
+
+                    linesCleared++;
+
+                    // re-check this same row index since new content just fell into it
+                    row--;
                 }
             }
+
+            // award score once per lock, based on how many lines were cleared
+            ScoreLines(linesCleared);
         }
     }
 }
