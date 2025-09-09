@@ -1,14 +1,38 @@
-﻿<div class="gameover">
+﻿@* 
+  GameOverScreen
+  - Simple overlay shown when the game ends.
+  - Shows a title and two actions: Play again / Main menu.
+  - Optionally displays the final score (you already pass it in as a parameter).
+*@
+<div class="gameover">
     <h1>Game Over</h1>
 
+    @* Optional: show the final score (uncomment if you want it visible) *@
+    @* <p>Your score: <strong>@Score</strong></p> *@
+
     <div class="actions">
+        @* When clicked, call back to the parent to start a new game *@
         <button @onclick="OnRetry">Play again</button>
+
+        @* When clicked, call back to the parent to go to the main menu *@
         <button @onclick="OnMenu">Main menu</button>
     </div>
 </div>
 
 @code {
+    /// <summary>
+    /// Final score to show (not required to render).
+    /// You can display it in the markup above if you want.
+    /// </summary>
     [Parameter] public int Score { get; set; }
+
+    /// <summary>
+    /// Parent-provided callback: start a new game.
+    /// </summary>
     [Parameter] public EventCallback OnRetry { get; set; }
+
+    /// <summary>
+    /// Parent-provided callback: return to the main menu.
+    /// </summary>
     [Parameter] public EventCallback OnMenu { get; set; }
 }

@@ -2,53 +2,84 @@
 @using System.Timers
 @implements IDisposable
 
+@* 
+   This component is the top-level "screen switcher" for your Tetris page.
+   It owns the Board instance and decides which screen to render:
+   - Menu → shows Play
+   - Game → shows the TetrisBoard
+   - GameOver → shows the GameOverScreen
+*@
 <div class="menu">
     @if (screen == Screen.Menu)
     {
-    <h1>Tetris</h1>
-    <button @onclick="StartGame">Play</button>
+        <h1>Tetris</h1>
+        <button @onclick="StartGame">Play</button>
     }
     else if (screen == Screen.Game)
     {
-    <TetrisBoard GameBoard="gameBoard" />
+        @* Pass the Board down so the child can render the grid *@
+        <TetrisBoard GameBoard="gameBoard" />
     }
     else if (screen == Screen.GameOver)
     {
-    <GameOverScreen OnRetry="StartGame" OnMenu="GoToMenu" />
+        @* GameOverScreen shows the game-over UI.
+           NOTE: If that screen needs to read the score or board state,
+           you can also pass GameBoard="gameBoard". *@
+        <GameOverScreen OnRetry="StartGame" OnMenu="GoToMenu" />
     }
 </div>
 
 @code {
+    // The single Board instance for the current run.
     private Board gameBoard = new();
+
+    // Simple state machine to choose which child to show.
     private Screen screen = Screen.Menu;
 
-    // tiny watcher that flips to GameOver when the board flag turns true
+    // A tiny polling timer that watches for game over while playing.
+    // (Optional approach; child-callbacks are another option.)
     private Timer? overWatch;
 
+    /// <summary>
+    /// Component startup: set up a lightweight timer that checks the Board.GameOver flag.
+    /// If it becomes true while we’re on the Game screen, switch to GameOver
+    /// and ask Blazor to re-render the UI on the main thread.
+    /// </summary>
     protected override void OnInitialized()
     {
-        overWatch = new Timer(50);
+        overWatch = new Timer(50); // tick ~20 times per second
         overWatch.Elapsed += (_, __) =>
         {
             if (screen == Screen.Game && gameBoard.GameOver)
             {
-                screen = Screen.GameOver;
-                InvokeAsync(StateHasChanged); // re-render UI thread
+                screen = Screen.GameOver;          // flip the screen
+                InvokeAsync(StateHasChanged);      // re-render on UI thread
             }
         };
-        overWatch.AutoReset = true;
+        overWatch.AutoReset = true;  // keep firing
         overWatch.Start();
     }
 
+    /// <summary>
+    /// Start a new game: create a fresh Board (resets everything) and show the Game screen.
+    /// </summary>
     void StartGame()
     {
-        gameBoard = new();     // GameOver resets to false
+        gameBoard = new();     // Board ctor spawns the first piece; GameOver=false; score reset
         screen = Screen.Game;
     }
 
+    /// <summary>
+    /// Navigate back to the Menu screen.
+    /// </summary>
     void GoToMenu() => screen = Screen.Menu;
 
+    /// <summary>
+    /// Clean up when the component is removed.
+    /// (Stops/releases the watcher timer if it was created.)
+    /// </summary>
     public void Dispose() => overWatch?.Dispose();
 
+    // All possible screens. (Scoreboard is listed but not used here.)
     enum Screen { Menu, Game, Pause, GameOver, Scoreboard }
 }

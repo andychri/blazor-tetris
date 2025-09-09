@@ -4,54 +4,89 @@
 @using System;
 @using System.Timers;
 
-
+@* 
+   Renders the Tetris board (20 rows x 10 columns) and listens for keyboard input.
+   Also runs a simple drop timer to advance the game at a fixed interval.
+*@
 <div class="tetris-game">
+    @* The wrapper is focusable (tabindex="0") so it can receive keydown events *@
     <div class="tetris-board-wrapper" @ref="boardDiv" tabindex="0" @onkeydown="HandleKeyDown">
-        @for (int row = 0; row < 20; row++)
+        @for (int row = 0; row < 20; row++)   @* board height *@
         {
             <div class="tetris-row">
-                @for (int col = 0; col < 10; col++)
+                @for (int col = 0; col < 10; col++)   @* board width *@
                 {
-                    var cell = GameBoard.GetCell(row, col);
+                    var cell = GameBoard.GetCell(row, col);  @* overlay active piece on settled grid *@
                     <div class="tetris-cell" style="background-color:@cell.Color"></div>
                 }
             </div>
         }
     </div>
-    <h1>@GameBoard.GameOver</h1>
+
+    @* Simple HUD showing the current score kept on the Board *@
+    <h1>Score: @GameBoard.score</h1>
 </div>
 
 @code {
+    // The Board (single source of truth) is supplied by the parent.
     [Parameter] public Board GameBoard { get; set; } = default!;
 
+    // Reference to the div so we can focus it and capture keyboard input.
     private ElementReference boardDiv;
+
+    // Helper that translates keyboard intents (left/right/down/rotate) into safe moves.
     private Movement movement;
+
+    // Periodic drop timer (gravity). Fires on a background thread.
     private Timer dropTimer;
 
+    /// <summary>
+    /// Called whenever parameters change. We (re)create Movement using the current Board.
+    /// Safer than doing this in the constructor because parameters are guaranteed to be set.
+    /// </summary>
     protected override void OnParametersSet()
     {
         movement = new Movement(GameBoard);
     }
 
+    /// <summary>
+    /// Component startup: begin the gravity timer.
+    /// </summary>
     protected override void OnInitialized() {
         StartDropTimer();
     }
 
+    /// <summary>
+    /// Sets up a repeating timer (every 500ms) that advances the game.
+    /// NOTE: Timer callbacks are NOT on the Blazor UI thread, so we use InvokeAsync to re-render.
+    /// </summary>
     private void StartDropTimer() {
-        dropTimer = new Timer(500);
-        dropTimer.Elapsed += OnDrop;
-        dropTimer.AutoReset = true;
+        dropTimer = new Timer(500);             // drop every 0.5s
+        dropTimer.Elapsed += OnDrop;            // callback for each tick
+        dropTimer.AutoReset = true;             // keep firing
         dropTimer.Start();
     }
 
+    /// <summary>
+    /// Gravity tick. If the piece cannot move down, we lock it (PlacePiece).
+    /// Otherwise, move it down one. Then request a UI update on the Blazor thread.
+    /// </summary>
     private void OnDrop(object? sender, ElapsedEventArgs e) {
+        // If moving down would collide or go out of bounds, lock the piece into the grid.
         if (!GameBoard.CanPlacePiece(GameBoard.currentPiece, "down")){
-            GameBoard.PlacePiece();
+            GameBoard.PlacePiece();             // merges, clears rows (and scores), may set GameOver
         }
+
+        // Otherwise, soft drop one row.
         movement.MoveDown();
+
+        // This is a background thread → marshal back to the UI thread.
         InvokeAsync(StateHasChanged); // Trigger re-render on UI thread
     }
 
+    /// <summary>
+    /// After first render, focus the board so it receives keyboard events without clicking.
+    /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender) {
         if (firstRender)
         {
@@ -59,6 +94,10 @@
         }
     }
 
+    /// <summary>
+    /// Maps keyboard keys to Movement/Board actions.
+    /// Arrow keys move/rotate; Space locks the piece (hard drop to floor via PlacePiece()).
+    /// </summary>
     private void HandleKeyDown(KeyboardEventArgs e) {
         switch (e.Key)
         {
@@ -72,20 +111,23 @@
                 movement.MoveDown();
                 break;
             case "ArrowUp":
-                movement.Rotate("clockwise"); ;
+                movement.Rotate("clockwise");   // simple CW rotate
                 break;
             case "z":
-                movement.Rotate("counter clockwise");
+                movement.Rotate("counter clockwise"); // anything not "clockwise" is treated as CCW in your code
                 break;
             case " ":
-                GameBoard.PlacePiece();
+                GameBoard.PlacePiece();         // hard drop: lock immediately
                 break;
         }
 
+        // We changed state → ask Blazor to re-render.
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Clean up resources when the component is removed.
     public void Dispose() {
-        // If you need JS cleanup later, do it here
+
     }
 }
