@@ -1,45 +1,14 @@
-﻿@using BlazorTetris.Tetris
-@inject IScoreService ScoreService
+﻿<div class="gameover">
+    <h1>Game Over</h1>
 
-<div class="overlay">
-    <div class="panel">
-        <h2>Game Over</h2>
-        <p>Score: <strong>@GameBoard.score</strong></p>
-
-        <div class="row">
-            <input @bind="playerName" placeholder="Your name" />
-            <button @onclick="SaveAsync">Save score</button>
-        </div>
-
-        <div class="row gap">
-            <button @onclick="PlayAgain">Play again</button>
-            <button @onclick="GoMenu">Menu</button>
-            <button @onclick="ViewScores">Scoreboard</button>
-        </div>
+    <div class="actions">
+        <button @onclick="OnRetry">Play again</button>
+        <button @onclick="OnMenu">Main menu</button>
     </div>
 </div>
 
 @code {
-    [Parameter] public required Board GameBoard { get; set; }
-    [Parameter] public EventCallback OnPlayAgain { get; set; }
+    [Parameter] public int Score { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
     [Parameter] public EventCallback OnMenu { get; set; }
-    [Parameter] public EventCallback OnViewScores { get; set; }
-
-    private string playerName = "Player";
-
-    private async Task SaveAsync()
-    {
-        var name = string.IsNullOrWhiteSpace(playerName) ? "Player" : playerName.Trim();
-        await ScoreService.AddAsync(new ScoreEntry
-        {
-            Name = name,
-            Points = GameBoard.score,              // uses your existing field
-            WhenUtc = DateTimeOffset.UtcNow
-        });
-        await OnViewScores.InvokeAsync();          // jump to scoreboard after saving
-    }
-
-    private Task PlayAgain() => OnPlayAgain.InvokeAsync();
-    private Task GoMenu() => OnMenu.InvokeAsync();
-    private Task ViewScores() => OnViewScores.InvokeAsync();
 }
